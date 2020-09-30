@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <PackageVersion>1.0.0</PackageVersion>
+        <AssemblyVersion>$(PackageVersion)</AssemblyVersion>
+        <Authors>rsivanov</Authors>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/rsivanov/Rebus.SqlServer.Outbox</PackageProjectUrl>
+        <PackageDescription>Provides an implementation of Rebus.Outbox abstraction using MS SQL Server as an outbox storage</PackageDescription>
+        <Copyright>Copyright 2020</Copyright>
+        <PackageTags>Outbox;Rebus;SqlServer</PackageTags>
+        <RepositoryUrl>https://github.com/rsivanov/Rebus.SqlServer.Outbox</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Rebus.Outbox" Version="1.1.0" />
+      <PackageReference Include="Rebus.SqlServer" Version="7.1.4" />
+    </ItemGroup>
+
+</Project>
