@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Linq;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using Rebus.Logging;
 using Rebus.Messages;
 using Rebus.Outbox;
 using Rebus.Serialization;
+using Rebus.SqlServer.Outbox.Internal;
 
 namespace Rebus.SqlServer.Outbox
 {
@@ -15,22 +16,19 @@ namespace Rebus.SqlServer.Outbox
 	/// </summary>
 	public class SqlServerOutboxStorage : IOutboxStorage
 	{
-		private readonly IDbConnectionProvider _connectionProvider;
+		private readonly Func<Task<DbConnection>> _connectionFactory;
 		private static readonly HeaderSerializer _headerSerializer = new HeaderSerializer();
 		private readonly TableName _tableName;
-		private readonly ILog _log;
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		/// <param name="connectionProvider"></param>
+		/// <param name="connectionFactory"></param>
 		/// <param name="tableName"></param>
-		/// <param name="rebusLoggerFactory"></param>
-		public SqlServerOutboxStorage(IDbConnectionProvider connectionProvider, string tableName, IRebusLoggerFactory rebusLoggerFactory)
+		public SqlServerOutboxStorage(Func<Task<DbConnection>> connectionFactory, string tableName)
 		{
-			_connectionProvider = connectionProvider;
+			_connectionFactory = connectionFactory;
 			_tableName = TableName.Parse(tableName);
-			_log = rebusLoggerFactory.GetLogger<SqlServerOutboxStorage>();
 		}
 		
 		/// <summary>
@@ -50,17 +48,10 @@ namespace Rebus.SqlServer.Outbox
 
 		private async Task EnsureTableIsCreatedAsync()
 		{
-			using (var connection = await _connectionProvider.GetConnection().ConfigureAwait(false))
+			using (var connection = await _connectionFactory().ConfigureAwait(false))
 			{
-				var tableNames = connection.GetTableNames();
-
-				if (tableNames.Contains(_tableName))
-				{
-					return;
-				}
-
-				_log.Info("Table {tableName} does not exist - it will be created now", _tableName.ToString());
-
+				if (connection.State != ConnectionState.Open)
+					await connection.OpenAsync().ConfigureAwait(false);
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText = $@"
@@ -82,8 +73,6 @@ IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{_t
 ";
 					await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 				}
-
-				await connection.Complete().ConfigureAwait(false);
 			}
 		}
 		
@@ -92,21 +81,32 @@ IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{_t
 		/// </summary>
 		public async Task Store(TransportMessage message)
 		{
-			using (var connection = await _connectionProvider.GetConnection().ConfigureAwait(false))
+			using (var connection = await _connectionFactory().ConfigureAwait(false))
 			{
+				if (connection.State != ConnectionState.Open)
+					await connection.OpenAsync().ConfigureAwait(false);
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText =
 						$@"INSERT INTO {_tableName} ([headers], [body]) VALUES (@headers, @body)";
 
 					var headersString = _headerSerializer.SerializeToString(message.Headers);
-					command.Parameters.Add("headers", SqlDbType.NVarChar, -1).Value = headersString;
-					command.Parameters.Add("body", SqlDbType.VarBinary, -1).Value = message.Body;
+					var headersParam = command.CreateParameter();
+					headersParam.ParameterName = "headers";
+					headersParam.DbType = DbType.String;
+					headersParam.Size = -1;
+					headersParam.Value = headersString;
+					command.Parameters.Add(headersParam);
+
+					var bodyParam = command.CreateParameter();
+					bodyParam.ParameterName = "body";
+					bodyParam.DbType = DbType.Binary;
+					bodyParam.Size = -1;
+					bodyParam.Value = message.Body;
+					command.Parameters.Add(bodyParam);
 
 					await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 				}
-
-				await connection.Complete().ConfigureAwait(false);
 			}
 		}
 
@@ -116,8 +116,10 @@ IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{_t
 		public async Task<TransportMessage[]> Retrieve(CancellationToken cancellationToken, int topMessages)
 		{
 			var messages = new List<TransportMessage>();
-			using (var connection = await _connectionProvider.GetConnection().ConfigureAwait(false))
+			using (var connection = await _connectionFactory().ConfigureAwait(false))
 			{
+				if (connection.State != ConnectionState.Open)
+					await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText =
@@ -138,8 +140,6 @@ OUTPUT deleted.headers, deleted.body
 						}
 					}
 				}
-
-				await connection.Complete().ConfigureAwait(false);
 			}
 
 			return messages.ToArray();

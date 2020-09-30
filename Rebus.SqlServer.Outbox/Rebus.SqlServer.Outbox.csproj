@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-        <PackageVersion>1.0.0</PackageVersion>
+        <PackageVersion>2.0.0</PackageVersion>
         <AssemblyVersion>$(PackageVersion)</AssemblyVersion>
         <Authors>rsivanov</Authors>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -14,10 +14,13 @@
         <RepositoryUrl>https://github.com/rsivanov/Rebus.SqlServer.Outbox</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
-
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
     <ItemGroup>
       <PackageReference Include="Rebus.Outbox" Version="1.1.0" />
-      <PackageReference Include="Rebus.SqlServer" Version="7.1.4" />
     </ItemGroup>
 
 </Project>

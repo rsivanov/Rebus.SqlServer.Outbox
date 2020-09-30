@@ -34,7 +34,7 @@ namespace Rebus.SqlServer.Outbox.Sample.WebApi.Orders.Services
 			command.Parameters.Add("quantity", SqlDbType.Int).Value = createOrderRequest.Quantity;
 
 			var id = (long) await command.ExecuteScalarAsync();
-			await _bus.Publish(new OrderCreated {Id = id});
+			await _bus.Publish(new OrderCreated {Id = id, ProductId = createOrderRequest.ProductId, Quantity = createOrderRequest.Quantity});
 			transactionScope.Complete();
 			return id;
 		}

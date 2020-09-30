@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="2.0.1" />
       <PackageReference Include="Rebus.RabbitMQ" Version="7.1.1" />
       <PackageReference Include="Rebus.ServiceProvider" Version="5.0.6" />
       <PackageReference Include="Rsi.LocalTransactions" Version="1.0.0" />

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Data.Common;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -52,9 +53,8 @@ namespace Rebus.SqlServer.Outbox.Sample.WebApi
 				})
 				.Outbox(c => c.UseSqlServer(() =>
 				{
-					var sqlConnection = SqlConnectionFactory.GetOpenConnection( dataAccessOptions.ConnectionString);
-					IDbConnection rebusDbConnection = new DbConnectionWrapper(sqlConnection, null, DbConnectionScope.Current != null);
-					return Task.FromResult(rebusDbConnection);
+					var dbConnection = (DbConnection) SqlConnectionFactory.GetOpenConnection(dataAccessOptions.ConnectionString);
+					return Task.FromResult(dbConnection);
 				}, "dbo.OutboxMessages"), options =>
 				{
 					options.RunMessagesProcessor = true;

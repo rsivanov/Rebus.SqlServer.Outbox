@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Data.Common;
 using System.Threading.Tasks;
 using Rebus.Config;
-using Rebus.Logging;
 using Rebus.Outbox;
 
 namespace Rebus.SqlServer.Outbox.Config
@@ -20,7 +20,7 @@ namespace Rebus.SqlServer.Outbox.Config
 		/// <param name="automaticallyCreateTables">Create outbox messages table automatically</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		public static void UseSqlServer(this StandardConfigurer<IOutboxStorage> configurer,
-			Func<Task<IDbConnection>> connectionFactory, string tableName, bool automaticallyCreateTables = true)
+			Func<Task<DbConnection>> connectionFactory, string tableName, bool automaticallyCreateTables = true)
 		{
 			if (configurer == null) 
 				throw new ArgumentNullException(nameof(configurer));
@@ -31,9 +31,7 @@ namespace Rebus.SqlServer.Outbox.Config
 			
 			configurer.Register(c =>
 			{
-				var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-				var connectionProvider = new DbConnectionFactoryProvider(connectionFactory);
-				var subscriptionStorage = new SqlServerOutboxStorage(connectionProvider, tableName, rebusLoggerFactory);
+				var subscriptionStorage = new SqlServerOutboxStorage(connectionFactory, tableName);
 
 				if (automaticallyCreateTables)
 				{
