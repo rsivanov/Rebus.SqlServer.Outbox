@@ -20,7 +20,7 @@
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Rebus.Outbox" Version="1.1.0" />
+      <PackageReference Include="Rebus.Outbox" Version="1.2.0" />
     </ItemGroup>
 
 </Project>
