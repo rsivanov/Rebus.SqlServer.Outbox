@@ -2,6 +2,10 @@
 
 go 
 
+USE RebusOutboxSample;
+
+go
+
 create table Orders 
 (
     Id bigint identity primary key,
