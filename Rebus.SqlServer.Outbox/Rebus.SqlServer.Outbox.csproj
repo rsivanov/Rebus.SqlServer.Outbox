@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-        <PackageVersion>2.0.0</PackageVersion>
+        <PackageVersion>2.1.0</PackageVersion>
         <AssemblyVersion>$(PackageVersion)</AssemblyVersion>
         <Authors>rsivanov</Authors>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -20,7 +20,7 @@
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Rebus.Outbox" Version="1.2.0" />
+      <PackageReference Include="Rebus.Outbox" Version="2.0.0" />
     </ItemGroup>
 
 </Project>
