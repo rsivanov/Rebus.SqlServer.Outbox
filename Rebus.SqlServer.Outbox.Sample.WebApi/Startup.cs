@@ -86,10 +86,7 @@ namespace Rebus.SqlServer.Outbox.Sample.WebApi
 				app.UseDeveloperExceptionPage();
 			}
 
-			app.ApplicationServices.UseRebus();
-
-			var bus = app.ApplicationServices.GetService<IBus>();
-			bus.Advanced.SyncBus.Subscribe<OrderCreated>();
+			app.ApplicationServices.UseRebus(bus => bus.Advanced.SyncBus.Subscribe<OrderCreated>());
 
 			app.UseStaticFiles();
 			app.UseRouting();
