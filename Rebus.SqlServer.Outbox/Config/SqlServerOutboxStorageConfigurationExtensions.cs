@@ -31,14 +31,14 @@ namespace Rebus.SqlServer.Outbox.Config
 			
 			configurer.Register(c =>
 			{
-				var subscriptionStorage = new SqlServerOutboxStorage(connectionFactory, tableName);
+				var outboxStorage = new SqlServerOutboxStorage(connectionFactory, tableName);
 
 				if (automaticallyCreateTables)
 				{
-					subscriptionStorage.EnsureTableIsCreated();
+					outboxStorage.EnsureTableIsCreated();
 				}
 
-				return subscriptionStorage;
+				return outboxStorage;
 			});			
 		}
 	}
